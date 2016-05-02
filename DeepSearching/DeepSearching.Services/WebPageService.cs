@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DeepSearching.Algorithms;
 using DeepSearching.Models;
+using HtmlAgilityPack;
 
 namespace DeepSearching.Services
 {
@@ -20,12 +21,7 @@ namespace DeepSearching.Services
 
             public WebPageService(string pageUrl)
             {
-                CurrentPage = new WebPage()
-                {
-                    Url = pageUrl,
-                    AllContent =
-                    new WebClient().DownloadString(pageUrl)
-                };
+                CurrentPage = new WebPage(pageUrl);
             }
             public HashSet<EstimatedUrl> MakeEstimationForChildPages()
             {
@@ -72,7 +68,8 @@ namespace DeepSearching.Services
                     _stopWatch.Start();
 
                 #region Getting all urls in current depth
-                HashSet<string> refUrls = GetAllRefInString(inputPage.AllContent, inputPage.Url);
+
+                HashSet<string> refUrls = GetAllRefInUrl(inputPage.Url);
                 HashSet<WebPage> webPagesInCurrentDepth = new HashSet<WebPage>();
 
                 #region Compare gotten urls (in current depth) with _currentWebPageChildren urls
@@ -92,11 +89,7 @@ namespace DeepSearching.Services
                 {
                     try
                     {
-                        webPagesInCurrentDepth.Add(new WebPage()
-                        {
-                            AllContent = new WebClient() { Encoding = Encoding.UTF8 }.DownloadString(url),
-                            Url = url
-                        });
+                        webPagesInCurrentDepth.Add(new WebPage(url));
                     }
                     catch (Exception exp)
                     {
@@ -125,7 +118,6 @@ namespace DeepSearching.Services
                         {
                             resultPages.Add(page);
                         }
-
                     }
 
                     //Console.WriteLine("_________");
@@ -133,33 +125,26 @@ namespace DeepSearching.Services
                 return resultPages;
             }
 
-            private HashSet<string> GetAllRefInString(string inputContent, string url)
+            public static HashSet<string> GetAllRefInUrl(string url)
             {
-                //ToDo checking literals!!!
+                HashSet<string> resultURLs = new HashSet<string>();
+                HtmlWeb web = new HtmlWeb();
+                HtmlDocument document = web.Load(url);
 
-                HashSet<string> resultURLsWithTags = new HashSet<string>();
-
-                string pattern = @"<\s*a\s+href\s*=\s*" + "\"" + @"[\w:/.\d-_%]+";
-                Regex regex = new Regex(pattern);
-                foreach (Match match in regex.Matches(inputContent))
+                var res = document.DocumentNode.Descendants("a");//SelectNodes("//a");
+                foreach (var item in res)
                 {
-                    resultURLsWithTags.Add(match.ToString());
-                }
-
-                HashSet<string> resultUrls = new HashSet<string>();
-                foreach (var urlItemWithTag in resultURLsWithTags)
-                {
-                    string urlToAdd = Regex.Replace(urlItemWithTag, @"<\s*a\s+href\s*=\s*" + "\"", string.Empty);
-                    if (urlToAdd.Contains("../") || !urlToAdd.Contains("http://"))//ToDo https
+                    string urlToAdd = item.Attributes["href"].Value;
+                    if (!urlToAdd.Contains("http://") && !urlToAdd.Contains("https://") || (urlToAdd.Contains("../")))
                         urlToAdd = RelativeToAbsolutePath(urlToAdd, url);
 
-                    resultUrls.Add(urlToAdd);
+                    resultURLs.Add(urlToAdd);
                 }
 
-                return resultUrls;
+                return resultURLs;
             }
 
-            private string RelativeToAbsolutePath(string relativeUrl, string currentURL)
+            private static string RelativeToAbsolutePath(string relativeUrl, string currentURL)
             {
                 string fileName = Path.GetFileName(relativeUrl);
                 string newDir = currentURL;
@@ -190,7 +175,7 @@ namespace DeepSearching.Services
                 return newDir;
             }
 
-            private string GetParentDirectoryPath(string url)
+            private static string GetParentDirectoryPath(string url)
             {
                 string fn = Path.GetFileName(url);
                 string dn = url.Remove(url.LastIndexOf(fn), fn.Length);//url - fn;//Path.GetDirectoryName(url);

@@ -1,33 +1,35 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
+using HtmlAgilityPack;
 
 namespace DeepSearching.Models
 {
     public class WebPage
     {
+        public WebPage(string pageUrl)
+        {
+            Url = pageUrl;
+            
+            HtmlDocument document = new HtmlWeb().Load(pageUrl);
+
+            Title = document.DocumentNode.SelectSingleNode("//title").InnerText;
+            
+            string textContent = document.DocumentNode.Descendants().Where
+                (n => n.NodeType == HtmlNodeType.Text 
+                && !string.IsNullOrWhiteSpace(n.InnerText) 
+                && n.ParentNode.Name != "script" 
+                && n.ParentNode.Name != "style")
+                    .Aggregate(String.Empty, (current, n) => string.Concat(current, " ", n.InnerText));
+
+            Text = textContent;
+        }
         public string Url { get; set; }
 
-        private string _title = string.Empty;
+        public string Title { get; set; }
 
-        public string Title
-        {
-            get
-            {
-                if (String.IsNullOrEmpty(_title) && (AllContent!=null)) 
-                    _title = Regex.Match(AllContent, @"\<title\b[^>]*\>\s*(?<Title>[\s\S]*?)\</title\>", 
-                        RegexOptions.IgnoreCase).Groups["Title"].Value;
-                return _title;
-            }
-        }
-        public string AllContent { get; set; }
-
-        public string Text
-        {
-            //ToDo extract text from allContent
-            get
-            {
-                return AllContent;
-            }
-        }
+        public string Text { get; set; }
     }
 }
