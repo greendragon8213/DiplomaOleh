@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using DeepSearching.Models;
-using Services;
+using DeepSearching.Services;
 
 namespace DeepSearching
 {

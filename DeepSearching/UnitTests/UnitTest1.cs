@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using DeepSearching.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Services;
+using DeepSearching.Services;
 
 namespace UnitTests
 {

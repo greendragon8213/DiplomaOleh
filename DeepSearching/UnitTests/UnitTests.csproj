@@ -58,8 +58,8 @@
       <Project>{9DD93D2A-CCA2-42F6-ABD7-DE84E8C2012B}</Project>
       <Name>DeepSearching.Models</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Services\DeepSearching.Services.csproj">
-      <Project>{F9CDDADB-B490-4595-BC69-934687AFFFD4}</Project>
+    <ProjectReference Include="..\DeepSearching.Services\DeepSearching.Services.csproj">
+      <Project>{468AC812-32D7-443D-BCEE-C326751BBB6F}</Project>
       <Name>DeepSearching.Services</Name>
     </ProjectReference>
   </ItemGroup>
