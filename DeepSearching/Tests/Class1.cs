@@ -4,11 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Parser_Google1
+namespace Tests
 {
-    public class Page
+    public class Class1
     {
-        public string start { get; set; }
-        public int label { get; set; }
     }
 }
